@@ -3,9 +3,10 @@
 #include <string.h>
 
 GtkBuilder *builder;
-GtkWidget *window;
+GtkWidget *main_window;
 GtkWidget *password_dialog;
-GObject *view;
+GtkWidget *password_entry;
+GtkWidget *webkit_view;
 WebKitWebView *webView;
 
 static gboolean
@@ -39,7 +40,60 @@ decide_policy_cb (WebKitWebView *webView,
     }
     return TRUE;
 }
+// handler button signals
+void
+on_aceptar_button_clicked (GtkButton *button,
+                            gpointer user_data)
+{
+    g_print("hola");
+    gchar pass[] = "123";
+    const gchar *entry_text;
+    entry_text = gtk_entry_get_text (GTK_ENTRY(password_entry));
+    //strcmp es el metodo para comparar 2 arrelgo de caracteres
+    int check = !strcmp(entry_text, pass);
 
+    if (check == 1)
+    {
+        gtk_main_quit ();
+    }
+}
+
+void
+on_close_button_clicked (GtkWidget *widget,
+                            gpointer data)
+{
+    gtk_window_close (GTK_WINDOW(main_window));
+}
+
+void
+on_cancelar_button_clicked (GtkButton *button,
+                            gpointer   user_data)
+{
+    gtk_widget_hide(password_dialog);
+}
+
+void
+on_home_button_clicked (GtkButton *button,
+                            gpointer   user_data)
+{
+    webkit_web_view_load_uri (webView, "http://www.munisatipo.gob.pe/index.php/galerias");
+  //system("thunar");
+}
+
+void
+on_refresh_button_clicked (GtkButton *button,
+                            gpointer   user_data)
+{
+    webkit_web_view_reload (webView);
+}
+
+void
+on_back_button_clicked (GtkButton *button,
+                            gpointer   user_data)
+{
+    webkit_web_view_go_back (webView);
+}
+// handler signals-------------------------------------------
 gint
 on_window_delete_event( GtkWidget *widget,
                    GdkEvent  *event,
@@ -50,57 +104,14 @@ on_window_delete_event( GtkWidget *widget,
         return TRUE;
 }
 
-
-void
-on_close_button_clicked (GtkButton *widget,
-                            gpointer data)
+gint
+on_password_dialog_delete_event(GtkWidget *widget,
+                   GdkEvent  *event,
+                   gpointer   user_data)
 {
-    //gtk_main_quit ();
-    gtk_window_close (GTK_WINDOW(window));
-    //g_print("click\n");
+    gtk_widget_hide(widget);
 }
-
-void
-on_pass_button_clicked (GtkWidget *widget,
-                            gpointer data)
-{
-    gchar pass[] = "123";
-    const gchar *entry_text;
-    entry_text = gtk_entry_get_text (GTK_ENTRY(data));
-
-    int check = !strcmp(entry_text, pass);
-
-    if (check == 1)
-    {
-        gtk_main_quit ();
-    }
-}
-
-void
-hide_window ()
-{
-    //gtk_widget_hide(exit_window);
-}
-
-void
-go_home ()
-{
-    webkit_web_view_load_uri (webView, "http://google.com/");
-  //system("thunar");
-}
-
-void
-refresh ()
-{
-    webkit_web_view_reload (webView);
-}
-
-void
-go_back ()
-{
-    webkit_web_view_go_back (webView);
-}
-
+//-----------------------------------------------------------
 int
 main (int argc, char *argv[])
 {
@@ -109,16 +120,17 @@ main (int argc, char *argv[])
     builder = gtk_builder_new ();
     gtk_builder_add_from_file (builder, "gui.glade", NULL);
 
-    window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
+    main_window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
     password_dialog = GTK_WIDGET(gtk_builder_get_object (builder, "password_dialog"));
-    view = gtk_builder_get_object (builder, "view");
+    webkit_view = GTK_WIDGET(gtk_builder_get_object (builder, "viewport"));
     webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
+    password_entry = GTK_WIDGET(gtk_builder_get_object (builder, "password_entry"));
 
-    gtk_container_add (GTK_CONTAINER (view), GTK_WIDGET (webView));
+    gtk_container_add (GTK_CONTAINER (webkit_view), GTK_WIDGET (webView));
 
     gtk_builder_connect_signals (builder,NULL);
-    webkit_web_view_load_uri (webView, "http://munisatipo.gob.pe/index.php/23-ordenanza-municipal");
-    gtk_window_set_default_size (GTK_WINDOW(window),800,800);
+    webkit_web_view_load_uri (webView, "http://google.com/");
+    gtk_window_set_default_size (GTK_WINDOW(main_window),800,800);
     gtk_widget_show(GTK_WIDGET(webView));
 
     gtk_main ();
