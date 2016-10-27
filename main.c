@@ -9,37 +9,47 @@ GtkWidget *password_entry;
 GtkWidget *webkit_view;
 WebKitWebView *webView;
 
+WebKitNavigationPolicyDecision *navigation_decision;
+WebKitResponsePolicyDecision *response;
+WebKitNavigationAction *navigation_action;
+WebKitURIRequest *uri_request;
+
 static gboolean
 decide_policy_cb (WebKitWebView *webView,
                   WebKitPolicyDecision *decision,
                   WebKitPolicyDecisionType type)
 {
-    switch (type) {
-    case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
-        //WebKitNavigationPolicyDecision *navigation_decision = WEBKIT_NAVIGATION_POLICY_DECISION (decision);
-        /* Make a policy decision here. */
-        g_print("Abriendo link\n");
-        break;
-    case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
-        //WebKitNavigationPolicyDecision *navigation_decision = WEBKIT_NAVIGATION_POLICY_DECISION (decision);
-        /* Make a policy decision here. */
-        g_print("Abriendo ventana\n");
-        const gchar *aki = webkit_web_view_get_uri (webView);
-        //const gchar *aki2 = webkit_web_view_load_html(webView, gchar *conte, NULL);
-        g_print("%s\n", aki);
 
-        break;
-    case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
-        //WebKitResponsePolicyDecision *response = WEBKIT_RESPONSE_POLICY_DECISION (decision);
-        /* Make a policy decision here. */
-        g_print("No estamos seguros\n");
-        break;
-    default:
-        /* Making no decision results in webkit_policy_decision_use(). */
-        return FALSE;
+    switch (type)
+    {
+        case WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION:
+            navigation_decision = WEBKIT_NAVIGATION_POLICY_DECISION (decision);
+            /* Make a policy decision here. */
+            g_print("Abriendo link\n");
+            break;
+        case WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION:
+            navigation_decision = WEBKIT_NAVIGATION_POLICY_DECISION (decision);
+            /* Make a policy decision here. */
+            g_print("Abriendo ventana\n");
+            navigation_action = webkit_navigation_policy_decision_get_navigation_action
+                                                                    (navigation_decision);
+            uri_request = webkit_navigation_action_get_request
+                                            (navigation_action);
+            const gchar *uri = webkit_uri_request_get_uri (uri_request);
+            g_print("%s\n", uri);
+            break;
+        case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
+            response = WEBKIT_RESPONSE_POLICY_DECISION (decision);
+            /* Make a policy decision here. */
+            g_print("No estamos seguros\n");
+            break;
+        default:
+            /* Making no decision results in webkit_policy_decision_use(). */
+            return FALSE;
     }
     return TRUE;
 }
+
 // handler button signals
 void
 on_aceptar_button_clicked (GtkButton *button,
@@ -132,6 +142,7 @@ main (int argc, char *argv[])
     webkit_web_view_load_uri (webView, "http://google.com/");
     gtk_window_set_default_size (GTK_WINDOW(main_window),800,800);
     gtk_widget_show(GTK_WIDGET(webView));
+    g_signal_connect (webView, "decide-policy", G_CALLBACK (decide_policy_cb), NULL);
 
     gtk_main ();
 

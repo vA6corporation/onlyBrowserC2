@@ -203,10 +203,11 @@
                     <property name="height_request">27</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_top">3</property>
                     <property name="label" translatable="yes">Municipalidad Provincial de Satipo</property>
                     <property name="angle">0.02</property>
                     <attributes>
-                      <attribute name="font-desc" value="Cantarell 15"/>
+                      <attribute name="font-desc" value="Cantarell 20"/>
                     </attributes>
                   </object>
                   <packing>
