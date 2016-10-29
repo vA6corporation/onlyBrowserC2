@@ -6,13 +6,34 @@ GtkBuilder *builder;
 GtkWidget *main_window;
 GtkWidget *password_dialog;
 GtkWidget *password_entry;
+GtkWidget *notebook;
 GtkWidget *webkit_view;
+GtkWidget *new_viewport;
+
+//GtkWidget *button;
+
 WebKitWebView *webView;
+WebKitWebView *webView2;
 
 WebKitNavigationPolicyDecision *navigation_decision;
 WebKitResponsePolicyDecision *response;
 WebKitNavigationAction *navigation_action;
 WebKitURIRequest *uri_request;
+
+
+
+void create_note()
+{
+    //button = gtk_button_new_with_label ("Button");
+    new_viewport = gtk_viewport_new (NULL,
+                  NULL);
+    gtk_container_add (GTK_CONTAINER (new_viewport), GTK_WIDGET (webView2));
+    gtk_widget_show_all(new_viewport);
+    gtk_notebook_append_page (GTK_NOTEBOOK(notebook),
+                          new_viewport,
+                          NULL);
+    gtk_notebook_next_page (GTK_NOTEBOOK(notebook));
+}
 
 static gboolean
 decide_policy_cb (WebKitWebView *webView,
@@ -37,6 +58,8 @@ decide_policy_cb (WebKitWebView *webView,
                                             (navigation_action);
             const gchar *uri = webkit_uri_request_get_uri (uri_request);
             g_print("%s\n", uri);
+            create_note();
+            webkit_web_view_load_uri (webView2, uri);
             break;
         case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
             response = WEBKIT_RESPONSE_POLICY_DECISION (decision);
@@ -134,7 +157,9 @@ main (int argc, char *argv[])
     password_dialog = GTK_WIDGET(gtk_builder_get_object (builder, "password_dialog"));
     webkit_view = GTK_WIDGET(gtk_builder_get_object (builder, "viewport"));
     webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
+    webView2 = WEBKIT_WEB_VIEW(webkit_web_view_new());
     password_entry = GTK_WIDGET(gtk_builder_get_object (builder, "password_entry"));
+    notebook = GTK_WIDGET(gtk_builder_get_object (builder, "notebook"));
 
     gtk_container_add (GTK_CONTAINER (webkit_view), GTK_WIDGET (webView));
 
