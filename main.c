@@ -10,29 +10,30 @@ GtkWidget *notebook;
 GtkWidget *webkit_view;
 GtkWidget *new_viewport;
 
-//GtkWidget *button;
-
 WebKitWebView *webView;
-WebKitWebView *webView2;
+WebKitWebView *webView_tmp;
 
 WebKitNavigationPolicyDecision *navigation_decision;
 WebKitResponsePolicyDecision *response;
 WebKitNavigationAction *navigation_action;
 WebKitURIRequest *uri_request;
 
-
-
-void create_note()
+void
+create_note()
 {
-    //button = gtk_button_new_with_label ("Button");
-    new_viewport = gtk_viewport_new (NULL,
-                  NULL);
-    gtk_container_add (GTK_CONTAINER (new_viewport), GTK_WIDGET (webView2));
+    new_viewport = gtk_viewport_new (NULL, NULL);
+    webView_tmp = WEBKIT_WEB_VIEW(webkit_web_view_new_with_related_view (webView));
+    gtk_container_add (GTK_CONTAINER (new_viewport),
+                                GTK_WIDGET (webView_tmp));
     gtk_widget_show_all(new_viewport);
     gtk_notebook_append_page (GTK_NOTEBOOK(notebook),
-                          new_viewport,
-                          NULL);
-    gtk_notebook_next_page (GTK_NOTEBOOK(notebook));
+                                        new_viewport,
+                                        NULL);
+    gtk_notebook_reorder_child (GTK_NOTEBOOK(notebook),
+                                new_viewport,
+                                    -1);
+    gtk_notebook_set_show_tabs (GTK_NOTEBOOK(notebook),TRUE);
+    //gtk_notebook_next_page (GTK_NOTEBOOK(notebook));
 }
 
 static gboolean
@@ -59,7 +60,7 @@ decide_policy_cb (WebKitWebView *webView,
             const gchar *uri = webkit_uri_request_get_uri (uri_request);
             g_print("%s\n", uri);
             create_note();
-            webkit_web_view_load_uri (webView2, uri);
+            webkit_web_view_load_uri (webView_tmp, "https://www.google.com.pe/?gfe_rd=cr&ei=3N4UWLrkGYS_-wXptazwBA&gws_rd=ssl");
             break;
         case WEBKIT_POLICY_DECISION_TYPE_RESPONSE:
             response = WEBKIT_RESPONSE_POLICY_DECISION (decision);
@@ -82,7 +83,7 @@ on_aceptar_button_clicked (GtkButton *button,
     gchar pass[] = "123";
     const gchar *entry_text;
     entry_text = gtk_entry_get_text (GTK_ENTRY(password_entry));
-    //strcmp es el metodo para comparar 2 arrelgo de caracteres
+    //strcmp es el metodo para comparar 2 arreglos de caracteres
     int check = !strcmp(entry_text, pass);
 
     if (check == 1)
@@ -157,7 +158,6 @@ main (int argc, char *argv[])
     password_dialog = GTK_WIDGET(gtk_builder_get_object (builder, "password_dialog"));
     webkit_view = GTK_WIDGET(gtk_builder_get_object (builder, "viewport"));
     webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
-    webView2 = WEBKIT_WEB_VIEW(webkit_web_view_new());
     password_entry = GTK_WIDGET(gtk_builder_get_object (builder, "password_entry"));
     notebook = GTK_WIDGET(gtk_builder_get_object (builder, "notebook"));
 
